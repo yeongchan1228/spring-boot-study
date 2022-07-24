@@ -1,6 +1,7 @@
 package study.javaoop;
 
 import org.junit.jupiter.api.Test;
+import study.Main;
 
 class MainTest {
 
