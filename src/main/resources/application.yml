@@ -1,3 +1,16 @@
 spring:
   cache:
     type: redis
+
+debug: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  error:
+    whitelabel:
+      enabled: false
