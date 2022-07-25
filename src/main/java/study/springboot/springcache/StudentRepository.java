@@ -11,7 +11,7 @@ public class StudentRepository {
 
     private final Map<String, Student> storage = new HashMap<>();
 
-    @Cacheable("student")
+    @Cacheable(value = "student", key = "#name")
     public Student getStudent(String name) {
         System.out.println("[repo] 접근");
         return storage.get(name);
