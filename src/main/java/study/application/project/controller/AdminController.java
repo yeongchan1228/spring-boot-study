@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminController {
 
     @GetMapping("/places")
-    public String adminPlaces() { return "admin/places"; }
+    public String adminPlaces() { return "admin/places/places"; }
 
     @GetMapping("/places/{placeId}")
     public String adminPlaceDetail(@PathVariable Integer placeId) { return "admin/place-detail"; }
