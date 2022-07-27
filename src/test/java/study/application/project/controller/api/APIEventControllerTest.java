@@ -4,15 +4,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import study.application.project.controller.dto.EventDto;
 import study.application.project.controller.dto.EventResponse;
 import study.application.project.domain.constant.EventStatus;
 import study.application.project.exception.ErrorCode;
+import study.application.project.service.EventServiceImpl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import static org.mockito.BDDMockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -23,9 +29,37 @@ class APIEventControllerTest {
     private final MockMvc mvc;
     private final ObjectMapper mapper;
 
+    @MockBean private EventServiceImpl eventService;
+
     public APIEventControllerTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
         this.mapper = new ObjectMapper();
+    }
+
+    @Test
+    @DisplayName("[API][GET] 이벤트 리스트 조회")
+    void givenNoting_whenRequestingEvents_thenReturnsListOfEvents() throws Exception {
+
+        // given
+        given(eventService.getEvents(any(), any(), any(), any(), any()))
+                .willReturn(List.of(createEventDto()));
+
+        // when & then
+        mvc.perform(get("/api/events")
+                        .queryParam("placeId", "1")
+                        .queryParam("eventName", "운동")
+                        .queryParam("eventStatus", EventStatus.OPENED.name())
+                        .queryParam("eventStartDateTime", "2021-01-01T00:00:00")
+                        .queryParam("eventEndDateTime", "2021-01-01T00:00:00")
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.data[0].placeId").value(1L))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.errorCode").value(ErrorCode.OK.getCode()))
+                .andDo(print());
+
+        then(eventService).should().getEvents(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -33,7 +67,6 @@ class APIEventControllerTest {
     void testEventResponse() throws Exception {
         EventResponse eventResponse = EventResponse.of(
                 1L,
-                null,
                 "오후 운동",
                 EventStatus.OPENED,
                 LocalDateTime.of(2021, 1, 1, 13, 0, 0),
@@ -55,5 +88,18 @@ class APIEventControllerTest {
                 .andDo(print());
     }
 
-
+    private EventDto createEventDto() {
+        return EventDto.of(
+                1L,
+                "오후 운동",
+                EventStatus.OPENED,
+                LocalDateTime.of(2021, 1, 1, 13, 0 , 0),
+                LocalDateTime.of(2021, 1, 1, 16, 0 , 0),
+                0,
+                24,
+                "마스크를 꼭 착용하세요.",
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+    }
 }

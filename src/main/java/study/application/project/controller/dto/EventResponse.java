@@ -9,8 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor(staticName = "of")
 public class EventResponse {
-    private Long id;
-    private PlaceDto place;
+    private Long placeId;
     private String eventName;
     private EventStatus eventStatus;
     private LocalDateTime eventStartDatetime;
@@ -20,7 +19,22 @@ public class EventResponse {
     private String mem;
 
     public static EventResponse empty(PlaceDto placeDto) {
-        return EventResponse.of(null, placeDto, null, null, null, null, null, null, null);
+        return EventResponse.of(null, null, null, null, null, null, null, null);
+    }
+
+    public static EventResponse from(EventDto eventDto) {
+        if (eventDto == null) return null;
+
+        return EventResponse.of(
+                eventDto.getPlaceId(),
+                eventDto.getEventName(),
+                eventDto.getEventStatus(),
+                eventDto.getEventStartDatetime(),
+                eventDto.getEventEndDatetime(),
+                eventDto.getCurrentNumberOfPeople(),
+                eventDto.getCapacity(),
+                eventDto.getMem()
+        );
     }
 
 }
