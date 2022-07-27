@@ -18,4 +18,23 @@ public class Place {
 
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+
+    private Place(PlaceType placeType, String placeName, String address, String phoneNumber, Integer capacity, String memo) {
+        this.placeType = placeType;
+        this.placeName = placeName;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.capacity = capacity;
+        this.memo = memo;
+    }
+
+    public static Place of(
+            PlaceType placeType,
+            String placeName,
+            String address,
+            String phoneNumber,
+            Integer capacity,
+            String memo) {
+        return new Place(placeType, placeName, address, phoneNumber, capacity, memo);
+    }
 }
