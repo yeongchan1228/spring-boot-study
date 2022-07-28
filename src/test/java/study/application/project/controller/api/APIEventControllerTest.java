@@ -1,5 +1,6 @@
 package study.application.project.controller.api;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import study.application.project.service.EventServiceImpl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,7 +40,7 @@ class APIEventControllerTest {
 
     @Test
     @DisplayName("[API][GET] 이벤트 리스트 조회")
-    void givenNoting_whenRequestingEvents_thenReturnsListOfEvents() throws Exception {
+    void givenParam_whenRequestingEvents_thenReturnsListOfEvents() throws Exception {
 
         // given
         given(eventService.getEvents(any(), any(), any(), any(), any()))
@@ -63,6 +65,27 @@ class APIEventControllerTest {
     }
 
     @Test
+    @DisplayName("[API][GET] 이벤트 리스트 잘못된 조회")
+    void givenWrongParam_whenRequestingEvents_thenReturnsFailed() throws Exception {
+
+        // when & then
+        mvc.perform(get("/api/events")
+                        .queryParam("placeId", "-1")
+                        .queryParam("eventName", "운")
+                        .queryParam("eventStatus", EventStatus.OPENED.name())
+                        .queryParam("eventStartDateTime", "2021-01-01T00:00:00")
+                        .queryParam("eventEndDateTime", "2021-01-01T00:00:00")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorCode").value(ErrorCode.VALIDATION_ERROR.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ErrorCode.VALIDATION_ERROR.getMessage())))
+                .andDo(print());
+    }
+
+
+    @Test
     @DisplayName("[API][POST] 이벤트 생성")
     void testEventResponse() throws Exception {
         EventResponse eventResponse = EventResponse.of(
@@ -85,6 +108,33 @@ class APIEventControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.errorCode").value(ErrorCode.OK.getCode()))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("[API][POST] 잘못된 요청")
+    void testEventResponse_Validation() throws Exception {
+        EventResponse eventResponse = EventResponse.of(
+                -1L,
+                "   ",
+                null,
+                LocalDateTime.of(2021, 1, 1, 13, 0, 0),
+                LocalDateTime.of(2021, 1, 1, 16, 0, 0),
+                -1,
+                0,
+                "마스크를 꼭 착용하세요"
+        );
+
+        mvc.perform(
+                        post("/api/events")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(eventResponse))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorCode").value(ErrorCode.VALIDATION_ERROR.getCode()))
+                .andExpect(jsonPath("$.message").value(containsString(ErrorCode.VALIDATION_ERROR.getMessage())))
                 .andDo(print());
     }
 

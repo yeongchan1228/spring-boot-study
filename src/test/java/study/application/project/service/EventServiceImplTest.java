@@ -1,5 +1,6 @@
 package study.application.project.service;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import study.application.project.controller.dto.EventDto;
 import study.application.project.domain.constant.EventStatus;
+import study.application.project.exception.GeneralException;
 import study.application.project.repository.EventRepository;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.list;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -40,6 +44,23 @@ class EventServiceImplTest {
         // then
         assertThat(list).hasSize(2);
         then(eventRepository).should().findEvents(null, null, null, null, null);
+    }
+
+    @Test
+    @DisplayName("검색 조건 조회 -> 예외 발생 -> 예외 처리 결과")
+    public void givenAny_whenSearchingEvents_thenReturnsError() throws Exception {
+        // given
+        given(eventRepository.findEvents(any(), any(), any(), any(), any()))
+                .willThrow(new GeneralException("Test"));
+
+        // when
+        Assertions.assertThatThrownBy(
+                () -> eventService.getEvents(null, null, null, null, null))
+                .isInstanceOf(GeneralException.class)
+                .hasMessageContaining("Test");
+
+        // then
+        then(eventRepository).should().findEvents(any(), any(), any(), any(), any());
     }
 
     @Test
