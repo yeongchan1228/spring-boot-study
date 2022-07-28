@@ -3,16 +3,21 @@ package study.application.project.controller.api;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import study.application.project.controller.dto.ApiDataResponse;
+import study.application.project.controller.dto.EventRequest;
 import study.application.project.controller.dto.EventResponse;
 import study.application.project.domain.constant.EventStatus;
 import study.application.project.service.EventServiceImpl;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Validated
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -31,8 +36,8 @@ public class APIEventController {
 
     @GetMapping("/events")
     public ApiDataResponse<List<EventResponse>> getEvents(
-            @RequestParam(required = false) Long placeId,
-            String eventName,
+            @Positive @RequestParam(required = false) Long placeId,
+            @Size(min = 2) String eventName,
             EventStatus eventStatus,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventStartDateTime,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventEndDateTime
@@ -47,8 +52,10 @@ public class APIEventController {
 
     @PostMapping("/events")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiDataResponse<List<EventResponse>> createEvent() {
-        return ApiDataResponse.empty();
+    public ApiDataResponse<String> createEvent(
+            @Validated @RequestBody EventRequest eventRequest
+            ) {
+        return ApiDataResponse.of(Boolean.toString(eventService.createEvent(eventRequest.toDto())));
     }
 
     @GetMapping("/events/{eventId}")
