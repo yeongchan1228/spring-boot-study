@@ -2,8 +2,6 @@ spring:
   cache:
     type: redis
 
-debug: true
-
 management:
   endpoints:
     web:
@@ -14,3 +12,8 @@ server:
   error:
     whitelabel:
       enabled: false
+
+logging:
+  level:
+    study.application.project: debug
+    org.springframework.web.servlet: debug
