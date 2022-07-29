@@ -1,5 +1,6 @@
 package study.application.project.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,9 +22,9 @@ public class EventRequest {
     private String eventName;
     @NotNull
     private EventStatus eventStatus;
-    @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime eventStartDateTime;
-    @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime eventEndDateTime;
     @NotNull @PositiveOrZero
     private Integer currentNumberOfPeople;
