@@ -133,14 +133,14 @@ class EventServiceImplTest {
     public void givenEvent_WhenCreatingEvent_thenReturnsTrue() throws Exception {
         // given
         EventDto dto = createEventDto(1L, "오후 운동", false);
-        given(eventRepository.save(dto)).willReturn(true);
+        given(eventRepository.saveEvent(dto)).willReturn(true);
 
         // when
         boolean result = eventService.createEvent(dto);
 
         // then
         assertThat(result).isTrue();
-        then(eventRepository).should().save(dto);
+        then(eventRepository).should().saveEvent(dto);
     }
 
     @Test
@@ -149,14 +149,14 @@ class EventServiceImplTest {
         // given
         Long eventId = 2L;
         EventDto dto = createEventDto(1L, "오후 운동", false);
-        given(eventRepository.update(eventId, dto)).willReturn(true);
+        given(eventRepository.updateEvent(eventId, dto)).willReturn(true);
 
         // when
         boolean modifyEvent = eventService.modifyEvent(eventId, dto);
 
         // then
         assertThat(modifyEvent).isTrue();
-        then(eventRepository).should().update(eventId, dto);
+        then(eventRepository).should().updateEvent(eventId, dto);
     }
 
     @Test
@@ -164,14 +164,14 @@ class EventServiceImplTest {
     public void givenNothing_WhenModifying_thenReturnsFalse() throws Exception {
         // given
         EventDto dto = createEventDto(1L, "오후 운동", false);
-        given(eventRepository.update(null, dto)).willReturn(false);
+        given(eventRepository.updateEvent(null, dto)).willReturn(false);
 
         // when
         boolean modifyEvent = eventService.modifyEvent(null, dto);
 
         // then
         assertThat(modifyEvent).isFalse();
-        then(eventRepository).should().update(null, dto);
+        then(eventRepository).should().updateEvent(null, dto);
     }
 
     @Test
@@ -179,14 +179,14 @@ class EventServiceImplTest {
     public void givenEventIdWithNothing_WhenModifying_thenReturnsFalse() throws Exception {
         // given
         Long eventId = 1L;
-        given(eventRepository.update(eventId, null)).willReturn(false);
+        given(eventRepository.updateEvent(eventId, null)).willReturn(false);
 
         // when
         boolean modifyEvent = eventService.modifyEvent(eventId, null);
 
         // then
         assertThat(modifyEvent).isFalse();
-        then(eventRepository).should().update(eventId, null);
+        then(eventRepository).should().updateEvent(eventId, null);
 
     }
 
@@ -195,21 +195,21 @@ class EventServiceImplTest {
     public void givenEventId_WhenDeleting_thenReturnsTrue() throws Exception {
         // given
         Long eventId = 1L;
-        given(eventRepository.delete(eventId)).willReturn(true);
+        given(eventRepository.deleteEvent(eventId)).willReturn(true);
 
         // when
         boolean modifyEvent = eventService.deleteEvent(eventId);
 
         // then
         assertThat(modifyEvent).isTrue();
-        then(eventRepository).should().delete(eventId);
+        then(eventRepository).should().deleteEvent(eventId);
     }
 
     @Test
     @DisplayName("이벤트 삭제 -> false")
     public void givenNothing_WhenDeleting_thenReturnsFalse() throws Exception {
         // given
-        given(eventRepository.delete(null)).willReturn(false);
+        given(eventRepository.deleteEvent(null)).willReturn(false);
 
         // when
         boolean modifyEvent = eventService.deleteEvent(null);

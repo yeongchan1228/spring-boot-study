@@ -32,14 +32,14 @@ public class EventServiceImpl implements EventService {
     }
 
     public boolean createEvent(EventDto eventDto) {
-        return eventRepository.save(eventDto);
+        return eventRepository.saveEvent(eventDto);
     }
 
     public boolean modifyEvent(Long eventId, EventDto eventDto) {
-        return eventRepository.update(eventId, eventDto);
+        return eventRepository.updateEvent(eventId, eventDto);
     }
 
     public boolean deleteEvent(Long eventId) {
-        return eventRepository.delete(eventId);
+        return eventRepository.deleteEvent(eventId);
     }
 }
