@@ -7,8 +7,8 @@ import study.application.project.repository.EventRepository;
 @Configuration
 public class RepositoryConfig {
 
-    @Bean
-    public EventRepository eventResponse() {
-        return new EventRepository() {};
-    }
+//    @Bean
+//    public EventRepository eventResponse() {
+//        return new EventRepository() {};
+//    }
 }

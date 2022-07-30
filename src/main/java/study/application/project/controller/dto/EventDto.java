@@ -24,7 +24,7 @@ public class EventDto {
 
     public static EventDto of(Event event) {
         return EventDto.of(event.getPlaceId(), event.getEventName(), event.getEventStatus(),
-                event.getEventStartDateTime(), event.getEventEndDateTime(), event.getCurrentNumberOfPeople(),
+                event.getEventStartDatetime(), event.getEventEndDatetime(), event.getCurrentNumberOfPeople(),
                 event.getCapacity(), event.getEventName(), event.getCreatedAt(), event.getModifiedAt());
     }
 }
