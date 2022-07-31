@@ -1,6 +1,7 @@
 package study.application.project.controller.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +17,15 @@ import study.application.project.exception.ErrorCode;
 import study.application.project.service.EventServiceImpl;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Deprecated
+@Disabled("Spring Data Rest로 대체")
 @WebMvcTest(APIEventController.class)
 class APIEventControllerTest {
 
@@ -43,25 +44,25 @@ class APIEventControllerTest {
     void givenParam_whenRequestingEvents_thenReturnsListOfEvents() throws Exception {
 
         // given
-        given(eventService.getEvents(any(), any(), any(), any(), any()))
-                .willReturn(List.of(createEventDto()));
-
-        // when & then
-        mvc.perform(get("/api/events")
-                        .queryParam("placeId", "1")
-                        .queryParam("eventName", "운동")
-                        .queryParam("eventStatus", EventStatus.OPENED.name())
-                        .queryParam("eventStartDateTime", "2021-01-01T00:00:00")
-                        .queryParam("eventEndDateTime", "2021-01-01T00:00:00")
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.data[0].placeId").value(1L))
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.errorCode").value(ErrorCode.OK.getCode()))
-                .andDo(print());
-
-        then(eventService).should().getEvents(any(), any(), any(), any(), any());
+//        given(eventService.getEvents(any(), any(), any(), any(), any()))
+//                .willReturn(List.of(createEventDto()));
+//
+//        // when & then
+//        mvc.perform(get("/api/events")
+//                        .queryParam("placeId", "1")
+//                        .queryParam("eventName", "운동")
+//                        .queryParam("eventStatus", EventStatus.OPENED.name())
+//                        .queryParam("eventStartDateTime", "2021-01-01T00:00:00")
+//                        .queryParam("eventEndDateTime", "2021-01-01T00:00:00")
+//                )
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+//                .andExpect(jsonPath("$.data[0].placeId").value(1L))
+//                .andExpect(jsonPath("$.success").value(true))
+//                .andExpect(jsonPath("$.errorCode").value(ErrorCode.OK.getCode()))
+//                .andDo(print());
+//
+//        then(eventService).should().getEvents(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -125,17 +126,17 @@ class APIEventControllerTest {
                 "마스크를 꼭 착용하세요"
         );
 
-        mvc.perform(
-                        post("/api/events")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(mapper.writeValueAsString(eventResponse))
-                )
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorCode").value(ErrorCode.VALIDATION_ERROR.getCode()))
-                .andExpect(jsonPath("$.message").value(containsString(ErrorCode.VALIDATION_ERROR.getMessage())))
-                .andDo(print());
+//        mvc.perform(
+//                        post("/api/events")
+//                                .contentType(MediaType.APPLICATION_JSON)
+//                                .content(mapper.writeValueAsString(eventResponse))
+//                )
+//                .andExpect(status().isBadRequest())
+//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+//                .andExpect(jsonPath("$.success").value(false))
+//                .andExpect(jsonPath("$.errorCode").value(ErrorCode.VALIDATION_ERROR.getCode()))
+//                .andExpect(jsonPath("$.message").value(containsString(ErrorCode.VALIDATION_ERROR.getMessage())))
+//                .andDo(print());
     }
 
     private EventDto createEventDto() {
