@@ -6,14 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
-import study.application.project.controller.dto.EventDto;
 import study.application.project.domain.Event;
 import study.application.project.domain.QEvent;
-import study.application.project.domain.constant.EventStatus;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 // 인스턴스 생성 편의를 위한 임시 Default 메서드 구현
 public interface EventRepository extends
@@ -30,29 +24,29 @@ public interface EventRepository extends
         bindings.bind(root.eventEndDatetime).first(ComparableExpression::loe);
     }
 
-    default List<EventDto> findEvents(
-            Long placeId,
-            String eventName,
-            EventStatus eventStatus,
-            LocalDateTime eventStartDateTime,
-            LocalDateTime eventEndDateTime
-    ) {
-        return List.of();
-    }
+//    default List<EventDto> findEvents(
+//            Long placeId,
+//            String eventName,
+//            EventStatus eventStatus,
+//            LocalDateTime eventStartDateTime,
+//            LocalDateTime eventEndDateTime
+//    ) {
+//        return List.of();
+//    }
 
-    default Optional<EventDto> findEvent(Long eventId) {
-        return Optional.empty();
-    }
+//    default Optional<EventDto> findEvent(Long eventId) {
+//        return Optional.empty();
+//    }
 
-    default boolean saveEvent(EventDto eventDto) {
-        return false;
-    }
+//    default boolean saveEvent(EventDto eventDto) {
+//        return false;
+//    }
 
-    default boolean updateEvent(Long eventId, EventDto eventDto) {
-        return false;
-    }
+//    default boolean updateEvent(Long eventId, EventDto eventDto) {
+//        return false;
+//    }
 
-    default boolean deleteEvent(Long eventId) {
-        return false;
-    }
+//    default boolean deleteEvent(Long eventId) {
+//        return false;
+//    }
 }

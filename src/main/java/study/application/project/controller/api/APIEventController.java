@@ -15,7 +15,6 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Validated
 @RestController
@@ -42,12 +41,16 @@ public class APIEventController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventStartDateTime,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventEndDateTime
     ) {
-        return ApiDataResponse.of(
-                eventService.getEvents(placeId, eventName, eventStatus, eventStartDateTime, eventEndDateTime)
-                .stream()
-                .map(EventResponse::from)
-                .collect(Collectors.toList())
-        );
+        return ApiDataResponse.of(List.of(EventResponse.of(
+                1L,
+                "오전 운동",
+                EventStatus.OPENED,
+                LocalDateTime.of(2021, 1, 1, 13, 0, 0),
+                LocalDateTime.of(2021, 1, 1, 16, 0, 0),
+                0,
+                24,
+                "마스크를 꼭 착용하세요"
+        )));
     }
 
     @PostMapping("/events")
@@ -55,7 +58,7 @@ public class APIEventController {
     public ApiDataResponse<String> createEvent(
             @Validated @RequestBody EventRequest eventRequest
             ) {
-        return ApiDataResponse.of(Boolean.toString(eventService.createEvent(eventRequest.toDto())));
+        return ApiDataResponse.of(Boolean.toString(eventService.saveEvent(eventRequest.toDto())));
     }
 
     @GetMapping("/events/{eventId}")
