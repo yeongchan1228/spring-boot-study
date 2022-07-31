@@ -16,7 +16,7 @@ public class EventResponse {
     private LocalDateTime eventEndDatetime;
     private Integer currentNumberOfPeople;
     private Integer capacity;
-    private String mem;
+    private String memo;
 
     public static EventResponse empty(PlaceDto placeDto) {
         return EventResponse.of(null, null, null, null, null, null, null, null);
@@ -33,7 +33,7 @@ public class EventResponse {
                 eventDto.getEventEndDatetime(),
                 eventDto.getCurrentNumberOfPeople(),
                 eventDto.getCapacity(),
-                eventDto.getMem()
+                eventDto.getMemo()
         );
     }
 

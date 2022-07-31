@@ -1,11 +1,5 @@
 package study.application.project.service;
 
-import study.application.project.controller.dto.EventDto;
-import study.application.project.domain.constant.EventStatus;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
 /**
  * 이벤트 서비스
  */
@@ -20,6 +14,6 @@ public interface EventService {
      * @param eventEndDateTime 이벤트 종료 시간
      * @return 이벤트 목록
      */
-    List<EventDto> getEvents(Long placeId, String eventName, EventStatus eventStatus,
-                              LocalDateTime eventStartDateTime, LocalDateTime eventEndDateTime);
+//    List<EventDto> getEvents(Long placeId, String eventName, EventStatus eventStatus,
+//                              LocalDateTime eventStartDateTime, LocalDateTime eventEndDateTime);
 }
