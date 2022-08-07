@@ -8,10 +8,12 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import study.application.project.domain.Event;
 import study.application.project.domain.QEvent;
+import study.application.project.repository.querydsl.EventRepositoryCustom;
 
 // 인스턴스 생성 편의를 위한 임시 Default 메서드 구현
 public interface EventRepository extends
         JpaRepository<Event, Long>,
+        EventRepositoryCustom,
         QuerydslPredicateExecutor<Event>,
         QuerydslBinderCustomizer<QEvent> {
 
