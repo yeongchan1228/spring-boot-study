@@ -3,6 +3,7 @@ package study.application.project.service;
 import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import study.application.project.controller.dto.EventDto;
 import study.application.project.domain.constant.EventStatus;
 import study.application.project.exception.ErrorCode;
@@ -17,6 +18,7 @@ import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
@@ -50,6 +52,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Transactional
     public boolean saveEvent(EventDto eventDto) {
         if (eventDto == null) return false;
 
@@ -62,6 +65,7 @@ public class EventServiceImpl implements EventService {
         return true;
     }
 
+    @Transactional
     public boolean modifyEvent(Long eventId, EventDto eventDto) {
         if (eventDto == null || eventId == null) return false;
 
@@ -74,6 +78,7 @@ public class EventServiceImpl implements EventService {
         return true;
     }
 
+    @Transactional
     public boolean deleteEvent(Long eventId) {
         try {
             eventRepository.findById(eventId).ifPresent(event -> eventRepository.delete(event));
@@ -83,4 +88,5 @@ public class EventServiceImpl implements EventService {
 
         return true;
     }
+
 }
