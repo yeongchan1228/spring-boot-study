@@ -1,11 +1,11 @@
 package springbootstudy.snsprojectweb.service;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
@@ -16,18 +16,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
+    @InjectMocks
     AuthService authService;
 
     @Mock
     MemberService memberService;
-
-    @BeforeEach
-    void setAuthService() {
-        authService = new AuthService(memberService);
-    }
 
     @Test
     void 회원가입_정상_작동() {
@@ -46,8 +42,6 @@ class AuthServiceTest {
         String password = "password";
 
         when(memberService.getOptionalMemberByUsername(username)).thenThrow(new SnsApplicationException(ResponseCode.DUPLICATED_USERNAME));
-        when(memberService.saveMember(any())).thenReturn(mock(Member.class));
-
 
         Assertions.assertThrows(SnsApplicationException.class, () -> authService.join(username, password));
     }
