@@ -1,6 +1,7 @@
 package springbootstudy.snsprojectweb.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -48,5 +49,21 @@ public class PostController {
 
         postService.delete(authentication.getName(), postId);
         return APIResponse.success(ResponseCode.OK);
+    }
+
+    @GetMapping
+    public APIResponse list(Pageable pageable) {
+        return APIResponse.success(
+                ResponseCode.OK,
+                postService.list(pageable).map(PostResponse::fromDto)
+        );
+    }
+
+    @GetMapping("/me")
+    public APIResponse myList(Pageable pageable, Authentication authentication) {
+        return APIResponse.success(
+                ResponseCode.OK,
+                postService.myList(authentication.getName(), pageable).map(PostResponse::fromDto)
+        );
     }
 }

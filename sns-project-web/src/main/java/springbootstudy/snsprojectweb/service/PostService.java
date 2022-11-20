@@ -1,6 +1,8 @@
 package springbootstudy.snsprojectweb.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import springbootstudy.snsprojectweb.common.ResponseCode;
@@ -44,6 +46,16 @@ public class PostService {
         }
 
         postRepository.deleteByPostId(postId);
+    }
+
+    public Page<PostDto> list(Pageable pageable) {
+        return postRepository.findAll(pageable).map(PostDto::fromEntity);
+    }
+
+    public Page<PostDto> myList(String username, Pageable pageable) {
+        Member findMember = memberService.findByUsername(username);
+
+        return postRepository.findAllByMember(findMember, pageable).map(PostDto::fromEntity);
     }
 
     private Post findByIdWithMember(long postId) {
