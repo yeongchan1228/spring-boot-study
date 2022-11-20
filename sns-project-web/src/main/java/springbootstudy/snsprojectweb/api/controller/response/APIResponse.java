@@ -13,6 +13,10 @@ public class APIResponse<T> {
     private String msg;
     private T data;
 
+    public static APIResponse success(ResponseCode responseCode) {
+        return APIResponse.of(responseCode.getCode(), responseCode.getMessage(), null);
+    }
+
     public static <T> APIResponse<T> success(ResponseCode responseCode, T data) {
         return APIResponse.of(responseCode.getCode(), responseCode.getMessage(), data);
     }
