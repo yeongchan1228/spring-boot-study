@@ -5,19 +5,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
-import springbootstudy.snsprojectweb.util.JwtTokenUtils;
 
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static springbootstudy.snsprojectweb.util.JwtTokenUtils.generateToken;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -30,7 +28,9 @@ class AuthServiceTest {
 
     @Mock
     BCryptPasswordEncoder passwordEncoder;
-    MockedStatic<JwtTokenUtils> jwtTokenUtilsMockedStatic;
+
+    @Mock
+    JwtTokenProvider jwtTokenProvider;
 
     @Test
     void 회원가입_정상_작동() {
@@ -60,14 +60,10 @@ class AuthServiceTest {
         String username = "username";
         String password = "password";
 
-        jwtTokenUtilsMockedStatic = mockStatic(JwtTokenUtils.class);
-
         when(memberService.findByUsername(username)).thenReturn(Member.of(username, password));
         when(passwordEncoder.matches(password, password)).thenReturn(true);
-        when(generateToken(username, null, null)).thenReturn("test-token");
+        when(jwtTokenProvider.generateToken(username)).thenReturn("test-token");
         Assertions.assertDoesNotThrow(() -> authService.login(username, password));
-
-        jwtTokenUtilsMockedStatic.close();
     }
 
     @Test
