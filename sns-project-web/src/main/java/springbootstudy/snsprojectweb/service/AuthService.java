@@ -2,7 +2,6 @@ package springbootstudy.snsprojectweb.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,8 +9,6 @@ import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
 import springbootstudy.snsprojectweb.service.dto.MemberDto;
-
-import static springbootstudy.snsprojectweb.util.JwtTokenUtils.generateToken;
 
 @Slf4j
 @Service
@@ -21,10 +18,7 @@ public class AuthService {
 
     private final MemberService memberService;
     private final BCryptPasswordEncoder passwordEncoder;
-    @Value("${jwt.key}")
-    private String key;
-    @Value("${jwt.expiredTimeMs}")
-    private Long expiredTimeMs;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public MemberDto join(String username, String password) {
@@ -42,7 +36,7 @@ public class AuthService {
             throw new SnsApplicationException(ResponseCode.VALIDATION_ERROR, "Password is invalid.");
         }
 
-        return generateToken(username, key, expiredTimeMs);
+        return jwtTokenProvider.generateToken(username);
     }
 
     private void checkDuplicateUsername(String username) {
@@ -51,7 +45,7 @@ public class AuthService {
                     throw new SnsApplicationException(
                             ResponseCode.DUPLICATED_USERNAME,
                             String.format("%s is duplicated.", username)
-            );
-        });
+                    );
+                });
     }
 }
