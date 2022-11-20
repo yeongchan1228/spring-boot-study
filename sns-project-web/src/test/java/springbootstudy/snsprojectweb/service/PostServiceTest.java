@@ -15,8 +15,7 @@ import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -72,7 +71,7 @@ public class PostServiceTest {
         long postId = 1;
 
         // when
-        when(postRepository.findByIdAndUsername(postId)).thenReturn(Optional.of(createPost(postId, member)));
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(createPost(postId, member)));
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.modify(title, content, username, postId));
@@ -87,7 +86,7 @@ public class PostServiceTest {
         long postId = 1;
 
         // when
-        when(postRepository.findByIdAndUsername(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+        when(postRepository.findByIdWithMember(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
 
         // then
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.modify(title, content, username, postId));
@@ -104,10 +103,55 @@ public class PostServiceTest {
         long postId = 1;
 
         // when
-        when(postRepository.findByIdAndUsername(postId)).thenReturn(Optional.of(createPost(postId, member)));
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(createPost(postId, member)));
 
         // then
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.modify(title, content, username, postId));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.INVALID_PERMISSION);
+    }
+
+    @Test
+    void 포스트_삭제_성공() throws Exception {
+        // given
+        long postId = 1;
+        String username = "username";
+        Member member = createMember(username);
+
+        // when
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(createPost(postId, member)));
+        doNothing().when(postRepository).deleteByPostId(postId);
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.delete(username, postId));
+    }
+
+    @Test
+    void 포스트_삭제_실패_등록된_글이_없을_경우() throws Exception {
+        // given
+        long postId = 1;
+        String username = "username";
+
+        // when
+        when(postRepository.findByIdWithMember(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.delete(username, postId));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
+    }
+
+    @Test
+    void 포스트_삭제_실패_작성자와_다를_경우() throws Exception {
+        // given
+        long postId = 1;
+        String username = "username";
+        String wrongUsername = "wrongUsername";
+        Member member = createMember(username);
+
+        // when
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(createPost(postId, member)));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.delete(wrongUsername, postId));
         Assertions.assertEquals(e.getResponseCode(), ResponseCode.INVALID_PERMISSION);
     }
 

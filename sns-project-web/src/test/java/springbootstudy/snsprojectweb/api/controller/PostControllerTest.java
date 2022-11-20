@@ -21,8 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -119,7 +118,7 @@ public class PostControllerTest {
                         .content(objectMapper.writeValueAsBytes(postRequest))
                         .with(csrf())
                 ).andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -138,6 +137,59 @@ public class PostControllerTest {
                         .with(csrf())
                 ).andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void 포스트_삭제_정상_동작() throws Exception {
+        // when
+        doNothing().when(postService).delete(any(), any());
+
+        // then
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void 포스트_삭제_실패_포스트가_없는_경우() throws Exception {
+        // when
+        doThrow(new SnsApplicationException(ResponseCode.NOT_FOUND)).when(postService).delete(any(), any());
+
+        // then
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 포스트_삭제_실패_로그인하지_않은_유저() throws Exception {
+        // then
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 포스트_삭제_실패_작성자와_동일하지_않은_경우() throws Exception {
+        // when
+        doThrow(new SnsApplicationException(ResponseCode.INVALID_PERMISSION)).when(postService).delete(any(), any());
+
+        // then
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isForbidden());
     }
 
     private PostDto createPostDto(long postId, String title, String content) {
