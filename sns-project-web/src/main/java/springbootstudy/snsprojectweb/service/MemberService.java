@@ -25,7 +25,7 @@ public class MemberService {
 
     public Member findByUsername(String username) {
         return memberRepository.findByUsername(username)
-                .orElseThrow(() -> new SnsApplicationException(ResponseCode.NOT_FOUND, String.format("%s not founded.")));
+                .orElseThrow(() -> new SnsApplicationException(ResponseCode.NOT_FOUND, String.format("%s not founded.", username)));
     }
 
     @Transactional
