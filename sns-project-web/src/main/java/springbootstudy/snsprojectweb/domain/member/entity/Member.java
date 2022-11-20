@@ -6,8 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import springbootstudy.snsprojectweb.domain.common.BaseEntity;
+import springbootstudy.snsprojectweb.domain.post.entity.Post;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -24,7 +27,10 @@ public class Member extends BaseEntity {
     private String password;
 
     @Enumerated(value = EnumType.STRING)
-    private MemberRole role = MemberRole.USER;
+    private MemberRole role = MemberRole.ROLE_USER;
+
+    @OneToMany
+    private List<Post> posts = new ArrayList<>();
 
     @Builder(builderMethodName = "createMember")
     public Member(String username, String password) {
