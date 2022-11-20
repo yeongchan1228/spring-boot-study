@@ -36,8 +36,18 @@ public class PostService {
         return PostDto.fromEntity(findPost);
     }
 
+    @Transactional
+    public void delete(String username, Long postId) {
+        Post findPost = findByIdWithMember(postId);
+        if (!findPost.getMember().getUsername().equals(username)) {
+            throw new SnsApplicationException(ResponseCode.INVALID_PERMISSION);
+        }
+
+        postRepository.deleteByPostId(postId);
+    }
+
     private Post findByIdWithMember(long postId) {
-        return postRepository.findByIdAndUsername(postId).orElseThrow(() -> new SnsApplicationException(
+        return postRepository.findByIdWithMember(postId).orElseThrow(() -> new SnsApplicationException(
                 ResponseCode.NOT_FOUND, String.format("%s not founded.", postId)
         ));
     }

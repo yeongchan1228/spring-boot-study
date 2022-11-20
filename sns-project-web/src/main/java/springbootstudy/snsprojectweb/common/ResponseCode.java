@@ -14,7 +14,7 @@ public enum ResponseCode {
     NOT_FOUND(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND, "Requested Resource Is Not Found"),
     VALIDATION_ERROR(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED, "Validation error"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED, "Token is invalid."),
-    INVALID_PERMISSION(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED, "Permission is invalid."),
+    INVALID_PERMISSION(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN, "Permission is invalid."),
     BAD_REQUEST(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST, "BadRequest."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
 

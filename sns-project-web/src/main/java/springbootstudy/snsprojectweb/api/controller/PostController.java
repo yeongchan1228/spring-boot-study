@@ -19,14 +19,14 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public APIResponse create(@RequestBody PostRequest postRequest, Authentication authentication) {
+    public APIResponse createPost(@RequestBody PostRequest postRequest, Authentication authentication) {
         postService.create(postRequest.getTitle(), postRequest.getContent(), authentication.getName());
         return APIResponse.success(ResponseCode.CREATED);
     }
 
     @PutMapping("/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public APIResponse modify(@RequestBody PostRequest postRequest, @PathVariable Long postId, Authentication authentication) {
+    public APIResponse modifyPost(@RequestBody PostRequest postRequest, @PathVariable Long postId, Authentication authentication) {
         if (postId == null) {
             return APIResponse.error(ResponseCode.BAD_REQUEST, "postId is null");
         }
@@ -37,5 +37,16 @@ public class PostController {
                         postService.modify(postRequest.getTitle(), postRequest.getContent(), authentication.getName(), postId)
                 )
         );
+    }
+
+    @DeleteMapping("/{postId}")
+    @ResponseStatus(HttpStatus.OK)
+    public APIResponse deletePost(@PathVariable Long postId, Authentication authentication) {
+        if (postId == null) {
+            return APIResponse.error(ResponseCode.BAD_REQUEST, "postId is null");
+        }
+
+        postService.delete(authentication.getName(), postId);
+        return APIResponse.success(ResponseCode.OK);
     }
 }
