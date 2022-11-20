@@ -2,10 +2,8 @@ package springbootstudy.snsprojectweb.api.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import springbootstudy.snsprojectweb.api.controller.request.JoinRequest;
 import springbootstudy.snsprojectweb.api.controller.request.LoginRequest;
 import springbootstudy.snsprojectweb.api.controller.response.APIResponse;
@@ -26,6 +24,7 @@ public class AuthController {
      * 회원가입
      */
     @PostMapping("/join")
+    @ResponseStatus(HttpStatus.CREATED)
     public APIResponse join(@RequestBody JoinRequest joinRequest) {
         MemberDto memberDto = authService.join(joinRequest.getUsername(), joinRequest.getPassword());
         return APIResponse.success(
