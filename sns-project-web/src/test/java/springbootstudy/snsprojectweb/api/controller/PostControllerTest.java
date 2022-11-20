@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -190,6 +191,44 @@ public class PostControllerTest {
                         .with(csrf())
                 ).andDo(print())
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void 피드_목록_조회_성공() throws Exception {
+        // when
+        when(postService.list(any())).thenReturn(Page.empty());
+
+        // then
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void 내_피드_목록_조회_성공() throws Exception {
+        // when
+        when(postService.myList(any(), any())).thenReturn(Page.empty());
+
+        // then
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 피드_목록_조회_실패_로그인_하지_않은_경우() throws Exception {
+        mockMvc.perform(get("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     private PostDto createPostDto(long postId, String title, String content) {

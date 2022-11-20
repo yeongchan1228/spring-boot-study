@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
@@ -154,6 +156,33 @@ public class PostServiceTest {
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.delete(wrongUsername, postId));
         Assertions.assertEquals(e.getResponseCode(), ResponseCode.INVALID_PERMISSION);
     }
+
+    @Test
+    void 포스트_목록_조회_성공() throws Exception {
+        // given
+        Pageable pageable = mock(Pageable.class);
+
+        // when
+        when(postRepository.findAll(pageable)).thenReturn(Page.empty());
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.list(pageable));
+    }
+
+    @Test
+    void 포스트_내_목록_조회_성공() throws Exception {
+        // given
+        Member member = mock(Member.class);
+        Pageable pageable = mock(Pageable.class);
+
+        // when
+        when(memberService.findByUsername(any())).thenReturn(member);
+        when(postRepository.findAllByMember(member, pageable)).thenReturn(Page.empty());
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.myList("", pageable));
+    }
+
 
     private Member createMember(String username) {
         return Member.of(username, null);
