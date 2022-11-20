@@ -28,7 +28,8 @@ public class Post extends BaseEntity {
     private Member member;
 
     @Builder(builderMethodName = "createPost")
-    public Post(String title, String content, Member member) {
+    public Post(Long id, String title, String content, Member member) {
+        this.id = id;
         this.title = title;
         this.content = content;
         this.member = member;
@@ -48,5 +49,19 @@ public class Post extends BaseEntity {
                 .content(content)
                 .member(member)
                 .build();
+    }
+
+    public static Post of(long id, String title, String content, Member member) {
+        return Post.createPost()
+                .id(id)
+                .title(title)
+                .content(content)
+                .member(member)
+                .build();
+    }
+
+    public void modifyPost(String title, String content) {
+        this.title = title;
+        this.content = content;
     }
 }
