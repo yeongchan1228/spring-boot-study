@@ -17,7 +17,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         ObjectMapper objectMapper = new ObjectMapper();
 
         response.setContentType("application/json");
-        response.setStatus(ResponseCode.INVALID_TOKEN.getCode());
+        response.setStatus(ResponseCode.INVALID_TOKEN.getHttpStatus().value());
         response.getWriter().write(objectMapper.writeValueAsString(APIResponse.error(ResponseCode.INVALID_TOKEN)));
     }
 }
