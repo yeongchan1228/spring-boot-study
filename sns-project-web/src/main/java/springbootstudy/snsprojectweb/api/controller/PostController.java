@@ -52,6 +52,7 @@ public class PostController {
     }
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public APIResponse list(Pageable pageable) {
         return APIResponse.success(
                 ResponseCode.OK,
@@ -60,10 +61,25 @@ public class PostController {
     }
 
     @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
     public APIResponse myList(Pageable pageable, Authentication authentication) {
         return APIResponse.success(
                 ResponseCode.OK,
                 postService.myList(authentication.getName(), pageable).map(PostResponse::fromDto)
         );
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/{postId}/likes")
+    public APIResponse likes(@PathVariable("postId") Long postId, Authentication authentication) {
+        postService.like(postId, authentication.getName());
+
+        return APIResponse.success(ResponseCode.OK);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{postId}/likes")
+    public APIResponse likeCount(@PathVariable("postId") Long postId) {
+        return APIResponse.success(ResponseCode.OK, postService.likeCount(postId));
     }
 }

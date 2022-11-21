@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.domain.post.entity.Like;
 import springbootstudy.snsprojectweb.domain.post.entity.Post;
+import springbootstudy.snsprojectweb.domain.post.repository.LikeRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
 import springbootstudy.snsprojectweb.service.dto.PostDto;
 
@@ -18,6 +20,8 @@ import springbootstudy.snsprojectweb.service.dto.PostDto;
 public class PostService {
 
     private final MemberService memberService;
+
+    private final LikeRepository likeRepository;
     private final PostRepository postRepository;
 
     @Transactional
@@ -58,8 +62,35 @@ public class PostService {
         return postRepository.findAllByMember(findMember, pageable).map(PostDto::fromEntity);
     }
 
+    @Transactional
+    public void like(long postId, String username) {
+        Post post = findByIdWithMember(postId);
+        Member findMember = memberService.findByUsername(username);
+
+        validAlreadyLike(postId, username, post, findMember);
+
+        likeRepository.save(Like.of(post, findMember));
+    }
+
+    public int likeCount(Long postId) {
+        Post post = findById(postId);
+        return likeRepository.getTotalCountByPostId(post.getId());
+    }
+
+    private void validAlreadyLike(long postId, String username, Post post, Member findMember) {
+        likeRepository.findByMemberAndPost(findMember, post).ifPresent(it -> {
+            throw new SnsApplicationException(ResponseCode.ALREADY_LIKED, String.format("%s already like post %d", username, postId));
+        });
+    }
+
     private Post findByIdWithMember(long postId) {
         return postRepository.findByIdWithMember(postId).orElseThrow(() -> new SnsApplicationException(
+                ResponseCode.NOT_FOUND, String.format("%s not founded.", postId)
+        ));
+    }
+
+    private Post findById(long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new SnsApplicationException(
                 ResponseCode.NOT_FOUND, String.format("%s not founded.", postId)
         ));
     }
