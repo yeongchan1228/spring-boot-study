@@ -5,8 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import springbootstudy.snsprojectweb.api.controller.request.PostCommentRequest;
 import springbootstudy.snsprojectweb.api.controller.request.PostRequest;
 import springbootstudy.snsprojectweb.api.controller.response.APIResponse;
+import springbootstudy.snsprojectweb.api.controller.response.PostCommentResponse;
 import springbootstudy.snsprojectweb.api.controller.response.PostResponse;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.service.PostService;
@@ -81,5 +83,19 @@ public class PostController {
     @GetMapping("/{postId}/likes")
     public APIResponse likeCount(@PathVariable("postId") Long postId) {
         return APIResponse.success(ResponseCode.OK, postService.likeCount(postId));
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{postId}/comments")
+    public APIResponse comments(@PathVariable("postId") Long postId,
+                                @RequestBody PostCommentRequest postCommentRequest) {
+        postService.comment(postId, postCommentRequest.getContent());
+        return APIResponse.success(ResponseCode.CREATED);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{postId}/comments")
+    public APIResponse comments(@PathVariable("postId") Long postId, Pageable pageable) {
+        return APIResponse.success(ResponseCode.OK, postService.getComments(postId, pageable).map(PostCommentResponse::fromDto));
     }
 }

@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.domain.post.entity.Comment;
 import springbootstudy.snsprojectweb.domain.post.entity.Like;
 import springbootstudy.snsprojectweb.domain.post.entity.Post;
+import springbootstudy.snsprojectweb.domain.post.repository.CommentRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.LikeRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
+import springbootstudy.snsprojectweb.service.dto.CommentDto;
 import springbootstudy.snsprojectweb.service.dto.PostDto;
 
 @Service
@@ -23,6 +26,7 @@ public class PostService {
 
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public void create(String title, String content, String username) {
@@ -58,23 +62,33 @@ public class PostService {
 
     public Page<PostDto> myList(String username, Pageable pageable) {
         Member findMember = memberService.findByUsername(username);
-
         return postRepository.findAllByMember(findMember, pageable).map(PostDto::fromEntity);
     }
 
     @Transactional
     public void like(long postId, String username) {
-        Post post = findByIdWithMember(postId);
+        Post findPost = findByIdWithMember(postId);
         Member findMember = memberService.findByUsername(username);
 
-        validAlreadyLike(postId, username, post, findMember);
+        validAlreadyLike(postId, username, findPost, findMember);
 
-        likeRepository.save(Like.of(post, findMember));
+        likeRepository.save(Like.of(findPost, findMember));
     }
 
     public int likeCount(Long postId) {
-        Post post = findById(postId);
-        return likeRepository.getTotalCountByPostId(post.getId());
+        Post findPost = findByIdWithMember(postId);
+        return likeRepository.getTotalCountByPostId(findPost.getId());
+    }
+
+    @Transactional
+    public void comment(Long postId, String content) {
+        Post findPost = findById(postId);
+        commentRepository.save(Comment.of(content, findPost, findPost.getMember()));
+    }
+
+    public Page<CommentDto> getComments(Long postId, Pageable pageable) {
+        Post findPost = findById(postId);
+        return commentRepository.findAllByPost(findPost, pageable).map(CommentDto::fromEntity);
     }
 
     private void validAlreadyLike(long postId, String username, Post post, Member findMember) {
