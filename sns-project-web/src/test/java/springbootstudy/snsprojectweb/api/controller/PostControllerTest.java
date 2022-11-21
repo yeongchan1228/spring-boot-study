@@ -214,7 +214,7 @@ public class PostControllerTest {
         when(postService.myList(any(), any())).thenReturn(Page.empty());
 
         // then
-        mockMvc.perform(get("/api/v1/posts")
+        mockMvc.perform(get("/api/v1/posts/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf())
                 ).andDo(print())
@@ -230,6 +230,83 @@ public class PostControllerTest {
                 ).andDo(print())
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser
+    void 좋아요_기능_성공() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 좋아요_기능_실패_로그인_하지_않은_경우() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 좋아요_기능_실패_게시글이_존재하지_않는_경우() throws Exception {
+        doThrow(new SnsApplicationException(ResponseCode.NOT_FOUND)).when(postService).like(anyLong(), any());
+
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void 좋아요_기능_실패_이미_좋아요를_누른_경우() throws Exception {
+        doThrow(new SnsApplicationException(ResponseCode.ALREADY_LIKED)).when(postService).like(anyLong(), any());
+
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser
+    void 좋아요_개수_조회_성공() throws Exception {
+        mockMvc.perform(get("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 좋아요_개수_조회_실패_로그인_하지_않은_경우() throws Exception {
+        mockMvc.perform(get("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 좋아요_개수_조회_실패_게시글이_존재하지_않는_경우() throws Exception {
+        when(postService.likeCount(anyLong())).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        mockMvc.perform(get("/api/v1/posts/1/likes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
 
     private PostDto createPostDto(long postId, String title, String content) {
         return PostDto.of(postId, title, content, LocalDateTime.now());

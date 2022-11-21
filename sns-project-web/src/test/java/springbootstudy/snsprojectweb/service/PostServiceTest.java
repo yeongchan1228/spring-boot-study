@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.domain.post.entity.Like;
 import springbootstudy.snsprojectweb.domain.post.entity.Post;
+import springbootstudy.snsprojectweb.domain.post.repository.LikeRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
 
 import java.util.Optional;
@@ -30,6 +32,9 @@ public class PostServiceTest {
 
     @Mock
     MemberService memberService;
+
+    @Mock
+    LikeRepository likeRepository;
 
     @Test
     void 포스트_작성_성공() throws Exception {
@@ -181,6 +186,78 @@ public class PostServiceTest {
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.myList("", pageable));
+    }
+
+    @Test
+    void 좋아요_기능_성공() throws Exception {
+        // given
+        long postId = 1;
+        String username = "username";
+
+        // when
+        when(postRepository.findByIdWithMember(anyLong())).thenReturn(Optional.of(mock(Post.class)));
+        when(memberService.findByUsername(anyString())).thenReturn(mock(Member.class));
+        when(likeRepository.findByMemberAndPost(any(), any())).thenReturn(Optional.empty());
+        when(likeRepository.save(any())).thenReturn(mock(Like.class));
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.like(postId, username));
+    }
+
+    @Test
+    void 좋아요_기능_실패_게시글이_존재하지_않는_경우() throws Exception {
+        // given
+        long postId = 1;
+        String username = "username";
+
+        // when
+        when(postRepository.findByIdWithMember(anyLong())).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.like(postId, username));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
+    }
+
+    @Test
+    void 좋아요_기능_실패_이미_좋아요를_누른_경우() throws Exception {
+        // given
+        long postId = 1;
+        String username = "username";
+
+        // when
+        when(postRepository.findByIdWithMember(anyLong())).thenReturn(Optional.of(mock(Post.class)));
+        when(memberService.findByUsername(anyString())).thenReturn(mock(Member.class));
+        when(likeRepository.findByMemberAndPost(any(), any())).thenThrow(new SnsApplicationException(ResponseCode.ALREADY_LIKED));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.like(postId, username));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.ALREADY_LIKED);
+    }
+
+    @Test
+    void 좋아요_개수_조회_성공() throws Exception {
+        // given
+        long postId = 1;
+
+        // when
+        when(postRepository.findById(anyLong())).thenReturn(Optional.of(mock(Post.class)));
+        when(likeRepository.getTotalCountByPostId(anyLong())).thenReturn(anyInt());
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.likeCount(postId));
+    }
+
+    @Test
+    void 좋아요_개수_조회_실패_게시글이_존재하지_않는_경우() throws Exception {
+        // given
+        long postId = 1;
+
+        // when
+        when(postRepository.findById(anyLong())).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.likeCount(postId));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
     }
 
 
