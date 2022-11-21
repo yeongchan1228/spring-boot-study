@@ -36,3 +36,16 @@ Authorization: Bearer {{accessToken}}
 GET localhost:8080/api/v1/posts/me?page=0&size=10&sort=id,desc
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+###
+# 포스트 좋아요 누르기
+POST localhost:8080/api/v1/posts/1/likes
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
+###
+# 포스트 좋아요 개수
+GET localhost:8080/api/v1/posts/1/likes
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
