@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import springbootstudy.snsprojectweb.api.controller.request.PostCommentRequest;
 import springbootstudy.snsprojectweb.api.controller.request.PostRequest;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
@@ -302,6 +303,79 @@ public class PostControllerTest {
 
         mockMvc.perform(get("/api/v1/posts/1/likes")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_작성_성공() throws Exception {
+        doNothing().when(postService).comment(anyLong(), anyString());
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of("comment")))
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 댓글_작성_실패_로그인_하지_않은_경우() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of("comment")))
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_작성_실패_게시글이_존재하지_않는_경우() throws Exception {
+        doThrow(new SnsApplicationException(ResponseCode.NOT_FOUND)).when(postService).comment(anyLong(), anyString());
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of("comment")))
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_페이징_조회_성공() throws Exception {
+        when(postService.getComments(anyLong(), any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 댓글_페이징_조회_실패_로그인_하지_않은_경우() throws Exception {
+        mockMvc.perform(get("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of("comment")))
+                        .with(csrf())
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_페이징_조회_실패_게시글이_존재하지_않는_경우() throws Exception {
+        when(postService.getComments(anyLong(), any())).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        mockMvc.perform(get("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of("comment")))
                         .with(csrf())
                 ).andDo(print())
                 .andExpect(status().isNotFound());

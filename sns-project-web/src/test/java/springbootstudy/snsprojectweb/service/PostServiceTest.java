@@ -8,11 +8,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.domain.post.entity.Comment;
 import springbootstudy.snsprojectweb.domain.post.entity.Like;
 import springbootstudy.snsprojectweb.domain.post.entity.Post;
+import springbootstudy.snsprojectweb.domain.post.repository.CommentRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.LikeRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
 
@@ -35,6 +38,9 @@ public class PostServiceTest {
 
     @Mock
     LikeRepository likeRepository;
+
+    @Mock
+    CommentRepository commentRepository;
 
     @Test
     void 포스트_작성_성공() throws Exception {
@@ -192,12 +198,14 @@ public class PostServiceTest {
     void 좋아요_기능_성공() throws Exception {
         // given
         long postId = 1;
+        Post post = createPost(postId);
         String username = "username";
+        Member member = createMember(username);
 
         // when
-        when(postRepository.findByIdWithMember(anyLong())).thenReturn(Optional.of(mock(Post.class)));
-        when(memberService.findByUsername(anyString())).thenReturn(mock(Member.class));
-        when(likeRepository.findByMemberAndPost(any(), any())).thenReturn(Optional.empty());
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
+        when(memberService.findByUsername(username)).thenReturn(member);
+        when(likeRepository.findByMemberAndPost(member, post)).thenReturn(Optional.empty());
         when(likeRepository.save(any())).thenReturn(mock(Like.class));
 
         // then
@@ -222,12 +230,14 @@ public class PostServiceTest {
     void 좋아요_기능_실패_이미_좋아요를_누른_경우() throws Exception {
         // given
         long postId = 1;
+        Post post = createPost(postId);
         String username = "username";
+        Member member = createMember(username);
 
         // when
-        when(postRepository.findByIdWithMember(anyLong())).thenReturn(Optional.of(mock(Post.class)));
-        when(memberService.findByUsername(anyString())).thenReturn(mock(Member.class));
-        when(likeRepository.findByMemberAndPost(any(), any())).thenThrow(new SnsApplicationException(ResponseCode.ALREADY_LIKED));
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
+        when(memberService.findByUsername(username)).thenReturn(member);
+        when(likeRepository.findByMemberAndPost(member, post)).thenThrow(new SnsApplicationException(ResponseCode.ALREADY_LIKED));
 
         // then
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.like(postId, username));
@@ -238,10 +248,11 @@ public class PostServiceTest {
     void 좋아요_개수_조회_성공() throws Exception {
         // given
         long postId = 1;
+        Post post = createPost(postId);
 
         // when
-        when(postRepository.findById(anyLong())).thenReturn(Optional.of(mock(Post.class)));
-        when(likeRepository.getTotalCountByPostId(anyLong())).thenReturn(anyInt());
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
+        when(likeRepository.getTotalCountByPostId(postId)).thenReturn(anyInt());
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.likeCount(postId));
@@ -253,10 +264,73 @@ public class PostServiceTest {
         long postId = 1;
 
         // when
-        when(postRepository.findById(anyLong())).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+        when(postRepository.findByIdWithMember(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
 
         // then
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.likeCount(postId));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_작성_성공() throws Exception {
+        // given
+        long postId = 1;
+        String content = "content";
+        Post post = createPost(postId);
+
+        // when
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(commentRepository.save(any())).thenReturn(mock(Comment.class));
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.comment(postId, content));
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_작성_실패_게시글이_존재하지_않는_경우() throws Exception {
+        // given
+        long postId = 1;
+        String content = "content";
+
+        // when
+        when(postRepository.findById(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.comment(postId, content));
+        Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_페이징_조회_성공() throws Exception {
+        // given
+        long postId = 1;
+        String content = "content";
+        Pageable pageable = mock(Pageable.class);
+        Post post = createPost(postId);
+
+        // when
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(commentRepository.findAllByPost(post, pageable)).thenReturn(Page.empty());
+
+        // then
+        Assertions.assertDoesNotThrow(() -> postService.getComments(postId, pageable));
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글_페이징_조회_실패_게시글이_존재하지_않는_경우() throws Exception {
+        // given
+        long postId = 1;
+        Pageable pageable = mock(Pageable.class);
+
+        // when
+        when(postRepository.findById(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+
+        // then
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.getComments(postId, pageable));
         Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
     }
 
@@ -267,5 +341,9 @@ public class PostServiceTest {
 
     private Post createPost(long postId, Member member) {
         return Post.of(postId, null, null, member);
+    }
+
+    private Post createPost(long postId) {
+        return Post.of(postId, null, null, null);
     }
 }
