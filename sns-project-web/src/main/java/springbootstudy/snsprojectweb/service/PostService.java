@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
+import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
+import springbootstudy.snsprojectweb.domain.alarm.entity.AlarmType;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
 import springbootstudy.snsprojectweb.domain.post.entity.Comment;
 import springbootstudy.snsprojectweb.domain.post.entity.Like;
@@ -23,6 +25,7 @@ import springbootstudy.snsprojectweb.service.dto.PostDto;
 public class PostService {
 
     private final MemberService memberService;
+    private final AlarmService alarmService;
 
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
@@ -73,6 +76,7 @@ public class PostService {
         validAlreadyLike(postId, username, findPost, findMember);
 
         likeRepository.save(Like.of(findPost, findMember));
+        alarmService.saveAlarm(Alarm.of(AlarmType.NEW_LIKE_ON_POST, findMember, findPost.getMember(), findPost));
     }
 
     public int likeCount(Long postId) {
@@ -81,9 +85,12 @@ public class PostService {
     }
 
     @Transactional
-    public void comment(Long postId, String content) {
-        Post findPost = findById(postId);
+    public void comment(Long postId, String content, String username) {
+        Post findPost = findByIdWithMember(postId);
+        Member findMember = memberService.findByUsername(username);
         commentRepository.save(Comment.of(content, findPost, findPost.getMember()));
+
+        alarmService.saveAlarm(Alarm.of(AlarmType.NEW_COMMENT_ON_POST, findMember, findPost.getMember(), findPost));
     }
 
     public Page<CommentDto> getComments(Long postId, Pageable pageable) {

@@ -88,8 +88,9 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{postId}/comments")
     public APIResponse comments(@PathVariable("postId") Long postId,
-                                @RequestBody PostCommentRequest postCommentRequest) {
-        postService.comment(postId, postCommentRequest.getContent());
+                                @RequestBody PostCommentRequest postCommentRequest,
+                                Authentication authentication) {
+        postService.comment(postId, postCommentRequest.getContent(), authentication.getName());
         return APIResponse.success(ResponseCode.CREATED);
     }
 
