@@ -1,0 +1,4 @@
+# 알람 목록 조회
+GET localhost:8080/api/v1/alarms?page=0&size=10&sort=id
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
