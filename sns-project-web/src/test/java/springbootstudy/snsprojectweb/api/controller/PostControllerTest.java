@@ -311,7 +311,7 @@ public class PostControllerTest {
     @Test
     @WithMockUser
     void 댓글_작성_성공() throws Exception {
-        doNothing().when(postService).comment(anyLong(), anyString());
+        doNothing().when(postService).comment(anyLong(), anyString(), anyString());
 
         mockMvc.perform(post("/api/v1/posts/1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -335,7 +335,7 @@ public class PostControllerTest {
     @Test
     @WithMockUser
     void 댓글_작성_실패_게시글이_존재하지_않는_경우() throws Exception {
-        doThrow(new SnsApplicationException(ResponseCode.NOT_FOUND)).when(postService).comment(anyLong(), anyString());
+        doThrow(new SnsApplicationException(ResponseCode.NOT_FOUND)).when(postService).comment(anyLong(), anyString(), anyString());
 
         mockMvc.perform(post("/api/v1/posts/1/comments")
                         .contentType(MediaType.APPLICATION_JSON)

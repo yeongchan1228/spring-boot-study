@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
+import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
 import springbootstudy.snsprojectweb.domain.post.entity.Comment;
 import springbootstudy.snsprojectweb.domain.post.entity.Like;
@@ -23,6 +24,8 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static springbootstudy.snsprojectweb.utils.CreateUtil.createMember;
+import static springbootstudy.snsprojectweb.utils.CreateUtil.createPost;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -31,16 +34,20 @@ public class PostServiceTest {
     PostService postService;
 
     @Mock
-    PostRepository postRepository;
+    MemberService memberService;
 
     @Mock
-    MemberService memberService;
+    AlarmService alarmService;
+
+    @Mock
+    PostRepository postRepository;
 
     @Mock
     LikeRepository likeRepository;
 
     @Mock
     CommentRepository commentRepository;
+
 
     @Test
     void 포스트_작성_성공() throws Exception {
@@ -199,17 +206,18 @@ public class PostServiceTest {
         // given
         long postId = 1;
         Post post = createPost(postId);
-        String username = "username";
-        Member member = createMember(username);
+        Member fromMember = createMember("username1");
+
 
         // when
         when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
-        when(memberService.findByUsername(username)).thenReturn(member);
-        when(likeRepository.findByMemberAndPost(member, post)).thenReturn(Optional.empty());
+        when(memberService.findByUsername(fromMember.getUsername())).thenReturn(fromMember);
+        when(likeRepository.findByMemberAndPost(fromMember, post)).thenReturn(Optional.empty());
         when(likeRepository.save(any())).thenReturn(mock(Like.class));
+        doNothing().when(alarmService).saveAlarm(any(Alarm.class));
 
         // then
-        Assertions.assertDoesNotThrow(() -> postService.like(postId, username));
+        Assertions.assertDoesNotThrow(() -> postService.like(postId, fromMember.getUsername()));
     }
 
     @Test
@@ -277,14 +285,16 @@ public class PostServiceTest {
         // given
         long postId = 1;
         String content = "content";
+        String fromUsername = "username";
         Post post = createPost(postId);
 
         // when
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
         when(commentRepository.save(any())).thenReturn(mock(Comment.class));
+        doNothing().when(alarmService).saveAlarm(any(Alarm.class));
 
         // then
-        Assertions.assertDoesNotThrow(() -> postService.comment(postId, content));
+        Assertions.assertDoesNotThrow(() -> postService.comment(postId, content, fromUsername));
     }
 
     @Test
@@ -293,12 +303,13 @@ public class PostServiceTest {
         // given
         long postId = 1;
         String content = "content";
+        String username = "username";
 
         // when
-        when(postRepository.findById(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
+        when(postRepository.findByIdWithMember(postId)).thenThrow(new SnsApplicationException(ResponseCode.NOT_FOUND));
 
         // then
-        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.comment(postId, content));
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.comment(postId, content, username));
         Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
     }
 
@@ -334,16 +345,4 @@ public class PostServiceTest {
         Assertions.assertEquals(e.getResponseCode(), ResponseCode.NOT_FOUND);
     }
 
-
-    private Member createMember(String username) {
-        return Member.of(username, null);
-    }
-
-    private Post createPost(long postId, Member member) {
-        return Post.of(postId, null, null, member);
-    }
-
-    private Post createPost(long postId) {
-        return Post.of(postId, null, null, null);
-    }
 }
