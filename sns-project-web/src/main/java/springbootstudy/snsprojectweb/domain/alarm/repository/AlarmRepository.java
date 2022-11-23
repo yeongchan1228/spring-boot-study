@@ -4,10 +4,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
-import springbootstudy.snsprojectweb.domain.member.entity.Member;
 
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
-    @EntityGraph(attributePaths = {"fromMember", "toMember", "targetPost"})
-    Page<Alarm> findAllByToMember(Member member, Pageable pageable);
+    @EntityGraph(attributePaths = {"fromMember", "targetPost"})
+    @Query("select a from Alarm a where a.toMember.username = :username")
+    Page<Alarm> findAllByUsername(@Param("username") String username, Pageable pageable);
 }

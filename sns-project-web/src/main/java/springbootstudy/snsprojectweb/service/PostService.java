@@ -56,6 +56,8 @@ public class PostService {
             throw new SnsApplicationException(ResponseCode.INVALID_PERMISSION);
         }
 
+        likeRepository.deleteAllByPostId(findPost.getId());
+        commentRepository.deleteAllByPostId(findPost.getId());
         postRepository.deleteByPostId(postId);
     }
 
