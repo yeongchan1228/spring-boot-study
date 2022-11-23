@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import springbootstudy.snsprojectweb.cache.repository.MemberCacheRepository;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
@@ -19,6 +20,7 @@ public class AuthService {
     private final MemberService memberService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberCacheRepository memberCacheRepository;
 
     @Transactional
     public MemberDto join(String username, String password) {
@@ -35,6 +37,8 @@ public class AuthService {
         if (!passwordEncoder.matches(password, member.getPassword())) {
             throw new SnsApplicationException(ResponseCode.VALIDATION_ERROR, "Password is invalid.");
         }
+
+        memberCacheRepository.setMemberDto(MemberDto.fromEntity(member));
 
         return jwtTokenProvider.generateToken(username);
     }
