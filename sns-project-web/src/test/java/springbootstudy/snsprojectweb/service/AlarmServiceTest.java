@@ -38,8 +38,7 @@ class AlarmServiceTest {
         Pageable pageable = mock(Pageable.class);
 
         // when
-        when(memberService.findByUsername(member.getUsername())).thenReturn(member);
-        when(alarmRepository.findAllByToMember(member, pageable)).thenReturn(Page.empty());
+        when(alarmRepository.findAllByUsername(member.getUsername(), pageable)).thenReturn(Page.empty());
 
         // then
         assertDoesNotThrow(() -> alarmService.alarmList(member.getUsername(), pageable));
