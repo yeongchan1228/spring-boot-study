@@ -207,8 +207,9 @@ public class PostServiceTest {
     void 좋아요_기능_성공() throws Exception {
         // given
         long postId = 1;
-        Post post = createPost(postId);
+        Member toMember = createMember("username");
         Member fromMember = createMember("username1");
+        Post post = createPost(postId, toMember);
 
 
         // when
@@ -216,7 +217,8 @@ public class PostServiceTest {
         when(memberService.findByUsername(fromMember.getUsername())).thenReturn(fromMember);
         when(likeRepository.findByMemberAndPost(fromMember, post)).thenReturn(Optional.empty());
         when(likeRepository.save(any())).thenReturn(mock(Like.class));
-        doNothing().when(alarmService).saveAlarm(any(Alarm.class));
+        when(alarmService.saveAlarm(any(Alarm.class))).thenReturn(1l);
+        doNothing().when(alarmService).send(anyLong(), anyString(), anyString());
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.like(postId, fromMember.getUsername()));
@@ -287,13 +289,18 @@ public class PostServiceTest {
         // given
         long postId = 1;
         String content = "content";
-        String fromUsername = "username";
-        Post post = createPost(postId);
+        String toUsername = "username1";
+        String fromUsername = "username2";
+        Member toMember = createMember(toUsername);
+        Member fromMember = createMember(fromUsername);
+        Post post = createPost(postId, toMember);
 
         // when
         when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
+        when(memberService.findByUsername(fromUsername)).thenReturn(fromMember);
         when(commentRepository.save(any())).thenReturn(mock(Comment.class));
-        doNothing().when(alarmService).saveAlarm(any(Alarm.class));
+        when(alarmService.saveAlarm(Alarm.of(any(), fromMember, post.getMember(), post))).thenReturn(1l);
+        doNothing().when(alarmService).send(anyLong(), anyString(), anyString());
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.comment(postId, content, fromUsername));

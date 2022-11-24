@@ -7,15 +7,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import springbootstudy.snsprojectweb.cache.repository.MemberCacheRepository;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.service.dto.MemberDto;
 
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -31,6 +32,9 @@ class AuthServiceTest {
 
     @Mock
     JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    MemberCacheRepository memberCacheRepository;
 
     @Test
     void 회원가입_정상_작동() {
@@ -59,9 +63,11 @@ class AuthServiceTest {
     void 로그인_정상_작동() {
         String username = "username";
         String password = "password";
+        Member member = Member.of(username, password);
 
-        when(memberService.findByUsername(username)).thenReturn(Member.of(username, password));
+        when(memberService.findByUsername(username)).thenReturn(member);
         when(passwordEncoder.matches(password, password)).thenReturn(true);
+        doNothing().when(memberCacheRepository).setMemberDto(any(MemberDto.class));
         when(jwtTokenProvider.generateToken(username)).thenReturn("test-token");
         Assertions.assertDoesNotThrow(() -> authService.login(username, password));
     }

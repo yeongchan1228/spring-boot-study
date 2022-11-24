@@ -7,14 +7,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import springbootstudy.snsprojectweb.cache.repository.MemberCacheRepository;
 import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
 import springbootstudy.snsprojectweb.domain.alarm.entity.AlarmType;
 import springbootstudy.snsprojectweb.domain.alarm.repository.AlarmRepository;
+import springbootstudy.snsprojectweb.domain.alarm.repository.EmitterRepository;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
 import springbootstudy.snsprojectweb.domain.post.entity.Post;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static springbootstudy.snsprojectweb.utils.CreateUtil.*;
@@ -29,7 +30,10 @@ class AlarmServiceTest {
     AlarmRepository alarmRepository;
 
     @Mock
-    MemberService memberService;
+    MemberCacheRepository memberCacheRepository;
+
+    @Mock
+    EmitterRepository emitterRepository;
 
     @Test
     void 알람_리스트_조회_정상_작동() throws Exception {
@@ -50,10 +54,10 @@ class AlarmServiceTest {
         Member toMember = createMember("username1");
         Member fromMember = createMember("username2");
         Post post = createPost(1, toMember);
-        Alarm alarm = createAlarm(AlarmType.NEW_COMMENT_ON_POST, fromMember, post.getMember(), post);
+        Alarm alarm = createAlarm(1, AlarmType.NEW_COMMENT_ON_POST, fromMember, post.getMember(), post);
 
         // when
-        when(alarmRepository.save(alarm)).thenReturn(any(Alarm.class));
+        when(alarmRepository.save(alarm)).thenReturn(alarm);
 
         // then
         assertDoesNotThrow(() -> alarmService.saveAlarm(alarm));
