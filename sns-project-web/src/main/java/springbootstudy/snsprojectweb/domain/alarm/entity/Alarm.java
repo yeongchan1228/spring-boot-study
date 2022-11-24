@@ -51,4 +51,14 @@ public class Alarm extends BaseEntity {
                 .targetPost(targetPost)
                 .build();
     }
+
+    public static Alarm of(Long id, AlarmType alarmType, Member fromMember, Member toMember, Post targetPost) {
+        return Alarm.createAlarm()
+                .id(id)
+                .alarmType(alarmType)
+                .fromMember(fromMember)
+                .toMember(toMember)
+                .targetPost(targetPost)
+                .build();
+    }
 }
