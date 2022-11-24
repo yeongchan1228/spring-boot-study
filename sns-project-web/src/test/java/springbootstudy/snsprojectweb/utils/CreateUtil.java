@@ -22,4 +22,8 @@ public class CreateUtil {
     public static Alarm createAlarm(AlarmType alarmType, Member fromMember, Member toMember, Post targetPost) {
         return Alarm.of(alarmType, fromMember, toMember, targetPost);
     }
+
+    public static Alarm createAlarm(long id, AlarmType alarmType, Member fromMember, Member toMember, Post targetPost) {
+        return Alarm.of(id, alarmType, fromMember, toMember, targetPost);
+    }
 }
