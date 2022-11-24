@@ -16,12 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtUserDetailsService implements UserDetailsService {
 
-    private final MemberService memberService;
     private final MemberCacheRepository memberCacheRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member findMember = memberCacheRepository.getMember(username).orElseGet(() -> memberService.findByUsername(username));
+        Member findMember = memberCacheRepository.getMember(username);
         return new User(findMember.getUsername(), findMember.getPassword(), List.of(new SimpleGrantedAuthority(findMember.getRole().toString())));
     }
 }

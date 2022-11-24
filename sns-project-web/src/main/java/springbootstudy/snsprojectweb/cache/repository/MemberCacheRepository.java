@@ -7,10 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.service.MemberService;
 import springbootstudy.snsprojectweb.service.dto.MemberDto;
 
 import java.time.Duration;
-import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -20,6 +20,7 @@ public class MemberCacheRepository {
     private final static Duration MEMBER_CACHE_TTL = Duration.ofDays(1);
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final MemberService memberService;
 
     public void setMemberDto(MemberDto memberDto) {
         String key = getKey(memberDto.getUsername());
@@ -30,7 +31,7 @@ public class MemberCacheRepository {
         redisTemplate.opsForValue().set(key, memberDto, MEMBER_CACHE_TTL);
     }
 
-    public Optional<Member> getMember(String username) {
+    public Member getMember(String username) {
         String key = getKey(username);
         Member findMember = null;
         try {
@@ -38,7 +39,13 @@ public class MemberCacheRepository {
             log.info("[Cache] Get {}, {}", key, objectMapper.writeValueAsString(findMember));
         } catch (JsonProcessingException e) {
         }
-        return Optional.ofNullable(findMember);
+
+        // DB 조회
+        if (findMember == null) {
+            findMember = memberService.findByUsername(username);
+        }
+
+        return findMember;
     }
 
     private String getKey(String username) {
