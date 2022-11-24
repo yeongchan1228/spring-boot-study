@@ -22,12 +22,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        String header = request.getHeader("Authorization");
-        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+        String token = getToken(request);
+        if (StringUtils.hasText(token)) {
             try {
-                final String token = header.split(" ")[1].trim();
-
                 if (jwtTokenProvider.isExpired(token)) {
                     log.error("Jwt is expired");
                     return;
@@ -40,6 +37,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String getToken(HttpServletRequest request) {
+        String parameterToken = request.getParameter("token");
+        if (StringUtils.hasText(parameterToken)) {
+            return parameterToken;
+        }
+        String header = request.getHeader("Authorization");
+        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+            return header.split(" ")[1].trim();
+        }
+
+        return null;
     }
 
     private void setSecurityAuthentication(String token) {

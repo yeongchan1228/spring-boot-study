@@ -78,7 +78,8 @@ public class PostService {
         validAlreadyLike(postId, username, findPost, findMember);
 
         likeRepository.save(Like.of(findPost, findMember));
-        alarmService.saveAlarm(Alarm.of(AlarmType.NEW_LIKE_ON_POST, findMember, findPost.getMember(), findPost));
+        long alarmId = alarmService.saveAlarm(Alarm.of(AlarmType.NEW_LIKE_ON_POST, findMember, findPost.getMember(), findPost));
+        alarmService.send(alarmId, findPost.getMember().getUsername(), "New Comment!!!");
     }
 
     public int likeCount(Long postId) {
@@ -92,7 +93,8 @@ public class PostService {
         Member findMember = memberService.findByUsername(username);
         commentRepository.save(Comment.of(content, findPost, findPost.getMember()));
 
-        alarmService.saveAlarm(Alarm.of(AlarmType.NEW_COMMENT_ON_POST, findMember, findPost.getMember(), findPost));
+        long alarmId = alarmService.saveAlarm(Alarm.of(AlarmType.NEW_COMMENT_ON_POST, findMember, findPost.getMember(), findPost));
+        alarmService.send(alarmId, findPost.getMember().getUsername(), "New Comment!!!");
     }
 
     public Page<CommentDto> getComments(Long postId, Pageable pageable) {

@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import springbootstudy.snsprojectweb.api.controller.response.APIResponse;
 import springbootstudy.snsprojectweb.api.controller.response.AlarmResponse;
 import springbootstudy.snsprojectweb.common.ResponseCode;
@@ -26,5 +27,10 @@ public class AlarmController {
                 ResponseCode.OK,
                 alarmService.alarmList(authentication.getName(), pageable).map(AlarmResponse::fromDto)
         );
+    }
+
+    @GetMapping("/subscribe")
+    public SseEmitter subscribe(Authentication authentication) {
+        return alarmService.connectAlarm(authentication.getName());
     }
 }

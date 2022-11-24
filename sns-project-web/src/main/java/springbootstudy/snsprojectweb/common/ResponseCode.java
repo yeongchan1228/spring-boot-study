@@ -17,7 +17,8 @@ public enum ResponseCode {
     INVALID_PERMISSION(HttpStatus.FORBIDDEN, "Permission is invalid"),
     ALREADY_LIKED(HttpStatus.CONFLICT, "Member already liked the post"),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "BadRequest"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
+    ALARM_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Sse connecting error");
 
     private final HttpStatus httpStatus;
     private final String message;
