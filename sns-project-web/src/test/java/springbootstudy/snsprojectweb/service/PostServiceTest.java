@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
-import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
 import springbootstudy.snsprojectweb.domain.post.entity.Comment;
 import springbootstudy.snsprojectweb.domain.post.entity.Like;
@@ -19,6 +18,8 @@ import springbootstudy.snsprojectweb.domain.post.entity.Post;
 import springbootstudy.snsprojectweb.domain.post.repository.CommentRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.LikeRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
+import springbootstudy.snsprojectweb.messaging.model.AlarmEvent;
+import springbootstudy.snsprojectweb.messaging.producer.AlarmProducer;
 
 import java.util.Optional;
 
@@ -37,7 +38,7 @@ public class PostServiceTest {
     MemberService memberService;
 
     @Mock
-    AlarmService alarmService;
+    AlarmProducer alarmProducer;
 
     @Mock
     PostRepository postRepository;
@@ -217,8 +218,7 @@ public class PostServiceTest {
         when(memberService.findByUsername(fromMember.getUsername())).thenReturn(fromMember);
         when(likeRepository.findByMemberAndPost(fromMember, post)).thenReturn(Optional.empty());
         when(likeRepository.save(any())).thenReturn(mock(Like.class));
-        when(alarmService.saveAlarm(any(Alarm.class))).thenReturn(1l);
-        doNothing().when(alarmService).send(anyLong(), anyString(), anyString());
+        doNothing().when(alarmProducer).send(any(AlarmEvent.class));
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.like(postId, fromMember.getUsername()));
@@ -299,8 +299,7 @@ public class PostServiceTest {
         when(postRepository.findByIdWithMember(postId)).thenReturn(Optional.of(post));
         when(memberService.findByUsername(fromUsername)).thenReturn(fromMember);
         when(commentRepository.save(any())).thenReturn(mock(Comment.class));
-        when(alarmService.saveAlarm(Alarm.of(any(), fromMember, post.getMember(), post))).thenReturn(1l);
-        doNothing().when(alarmService).send(anyLong(), anyString(), anyString());
+        doNothing().when(alarmProducer).send(any(AlarmEvent.class));
 
         // then
         Assertions.assertDoesNotThrow(() -> postService.comment(postId, content, fromUsername));
