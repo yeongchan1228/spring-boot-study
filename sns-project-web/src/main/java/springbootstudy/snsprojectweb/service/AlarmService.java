@@ -11,9 +11,11 @@ import springbootstudy.snsprojectweb.cache.repository.MemberCacheRepository;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
 import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
+import springbootstudy.snsprojectweb.domain.alarm.entity.AlarmType;
 import springbootstudy.snsprojectweb.domain.alarm.repository.AlarmRepository;
 import springbootstudy.snsprojectweb.domain.alarm.repository.EmitterRepository;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
+import springbootstudy.snsprojectweb.domain.post.entity.Post;
 import springbootstudy.snsprojectweb.service.dto.AlarmDto;
 
 import java.io.IOException;
@@ -44,15 +46,19 @@ public class AlarmService {
         return alarmRepository.save(alarm).getId();
     }
 
-    public void send(final long alarmId, final String username, final String msg) {
-        emitterRepository.get(username).ifPresentOrElse(sseEmitter -> {
+    @Transactional
+    public void send(final AlarmType alarmType, final Member fromMember, final Post post, String msg) {
+        long alarmId = saveAlarm(Alarm.of(alarmType, fromMember, post.getMember(), post));
+
+        String toUsername = post.getMember().getUsername();
+        emitterRepository.get(toUsername).ifPresentOrElse(sseEmitter -> {
             try {
-                sseEmitter.send(SseEmitter.event().id(createAlarmId(username, alarmId)).name(ALARM_NAME).data(msg));
+                sseEmitter.send(SseEmitter.event().id(createAlarmId(toUsername, alarmId)).name(ALARM_NAME).data(msg));
             } catch (IOException e) {
-                emitterRepository.delete(username);
+                emitterRepository.delete(toUsername);
                 throw new SnsApplicationException(ResponseCode.INTERNAL_SERVER_ERROR);
             }
-        }, () -> log.info("[SseEmitter] {} SseEmitter Not Founded", username));
+        }, () -> log.info("[SseEmitter] {} SseEmitter Not Founded", toUsername));
     }
 
     public SseEmitter connectAlarm(String username) {

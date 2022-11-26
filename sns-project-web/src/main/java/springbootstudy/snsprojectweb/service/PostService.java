@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import springbootstudy.snsprojectweb.common.ResponseCode;
 import springbootstudy.snsprojectweb.common.exception.SnsApplicationException;
-import springbootstudy.snsprojectweb.domain.alarm.entity.Alarm;
 import springbootstudy.snsprojectweb.domain.alarm.entity.AlarmType;
 import springbootstudy.snsprojectweb.domain.member.entity.Member;
 import springbootstudy.snsprojectweb.domain.post.entity.Comment;
@@ -16,6 +15,8 @@ import springbootstudy.snsprojectweb.domain.post.entity.Post;
 import springbootstudy.snsprojectweb.domain.post.repository.CommentRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.LikeRepository;
 import springbootstudy.snsprojectweb.domain.post.repository.PostRepository;
+import springbootstudy.snsprojectweb.messaging.model.AlarmEvent;
+import springbootstudy.snsprojectweb.messaging.producer.AlarmProducer;
 import springbootstudy.snsprojectweb.service.dto.CommentDto;
 import springbootstudy.snsprojectweb.service.dto.PostDto;
 
@@ -25,11 +26,11 @@ import springbootstudy.snsprojectweb.service.dto.PostDto;
 public class PostService {
 
     private final MemberService memberService;
-    private final AlarmService alarmService;
 
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final AlarmProducer alarmProducer;
 
     @Transactional
     public void create(String title, String content, String username) {
@@ -78,8 +79,7 @@ public class PostService {
         validAlreadyLike(postId, username, findPost, findMember);
 
         likeRepository.save(Like.of(findPost, findMember));
-        long alarmId = alarmService.saveAlarm(Alarm.of(AlarmType.NEW_LIKE_ON_POST, findMember, findPost.getMember(), findPost));
-        alarmService.send(alarmId, findPost.getMember().getUsername(), "New Comment!!!");
+        alarmProducer.send(AlarmEvent.of(AlarmType.NEW_LIKE_ON_POST, findMember, findPost, "New Like!!!"));
     }
 
     public int likeCount(Long postId) {
@@ -91,10 +91,9 @@ public class PostService {
     public void comment(Long postId, String content, String username) {
         Post findPost = findByIdWithMember(postId);
         Member findMember = memberService.findByUsername(username);
-        commentRepository.save(Comment.of(content, findPost, findPost.getMember()));
 
-        long alarmId = alarmService.saveAlarm(Alarm.of(AlarmType.NEW_COMMENT_ON_POST, findMember, findPost.getMember(), findPost));
-        alarmService.send(alarmId, findPost.getMember().getUsername(), "New Comment!!!");
+        commentRepository.save(Comment.of(content, findPost, findPost.getMember()));
+        alarmProducer.send(AlarmEvent.of(AlarmType.NEW_COMMENT_ON_POST, findMember, findPost, "New Comment!!!"));
     }
 
     public Page<CommentDto> getComments(Long postId, Pageable pageable) {
